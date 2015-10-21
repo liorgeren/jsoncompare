@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import jsoncompare
+import ujsoncompare
 
 a = {
     "failureReason" : "Invalid request entity",
@@ -28,4 +28,4 @@ b = {
         }
     ]
 }
-print jsoncompare.are_same(a, b)[1]
+print ujsoncompare.are_same(a, b)[1]

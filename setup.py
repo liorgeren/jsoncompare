@@ -2,23 +2,24 @@
 
 from setuptools import setup
 
+
 def read_readme(fname):
     try:
-       import pypandoc
-       return pypandoc.convert('README.md', 'rst')
+        import pypandoc
+        return pypandoc.convert('README.md', 'rst')
     except (IOError, ImportError):
-       return ''
+        return ''
 
 
 setup(
-    name = 'jsoncompare',
-    version = '0.1.2',
-    description = 'Json comparison tool',
-    author = 'Daniel Myers',
-    author_email = 'dmandroid88@gmail.com',
-    url = 'https://github.com/dandroid88/jsoncompare',
-    packages = ['jsoncompare', 'jsoncompare.test'],
-    test_suite = "jsoncompare.test.test_jsoncompare",
-    keywords = 'json comparison compare order',
-    long_description = read_readme('README.md')
+    name='ujsoncompare',
+    version='0.1.3',
+    description='Json comparison tool',
+    author='Daniel Myers',
+    author_email='dmandroid88@gmail.com',
+    url='https://github.com/darthghandi/jsoncompare',
+    packages=['ujsoncompare', 'ujsoncompare.test'],
+    test_suite="ujsoncompare.test.test_jsoncompare",
+    keywords='json comparison compare order',
+    long_description=read_readme('README.md'), requires=['ujson', 'future']
 )
