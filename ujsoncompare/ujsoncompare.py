@@ -53,7 +53,7 @@ def _generate_pprint_json(value):
     return ujson.dumps(value, sort_keys=True, indent=4)
 
 
-def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=0, less_than=0):
+def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1):
     # DAN - I had to flip flop this
     for key in expected:
         if key not in actual:
@@ -70,7 +70,7 @@ def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=0, less_t
     return True, Stack()
 
 
-def _is_list_same(expected, actual, ignore_value_of_keys, greater_than=0, less_than=0):
+def _is_list_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1):
     for i in range(len(expected)):
         are_same_flag, stack = _are_same(expected[i], actual[i], ignore_value_of_keys, times_higher=greater_than,
                                          times_lower=less_than)
@@ -85,7 +85,7 @@ def _bottom_up_sort(unsorted_json):
         for i in range(len(unsorted_json)):
             new_list.append(_bottom_up_sort(unsorted_json[i]))
         if new_list and isinstance(new_list[0], dict):
-            return sorted(new_list, key=lambda x: sorted(x.keys()))
+            return sorted(new_list, key=lambda x: sorted(x.items(), key=lambda v: str(v[::-1])))
         return sorted(new_list)
 
     elif isinstance(unsorted_json, dict):
@@ -96,6 +96,10 @@ def _bottom_up_sort(unsorted_json):
 
     else:
         return unsorted_json
+
+
+def key_sort():
+    return
 
 
 def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False, times_higher=0, times_lower=0):

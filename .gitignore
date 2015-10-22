@@ -51,3 +51,6 @@ docs/_build/
 
 #gedit
 *~
+
+#jetbrains directory
+.idea/*
