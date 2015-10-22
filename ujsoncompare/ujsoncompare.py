@@ -50,7 +50,7 @@ def _format_value(value):
 
 
 def _generate_pprint_json(value):
-    return ujson.dumps(value, sort_keys=True, indent=4)
+    return ujson.dumps(value, indent=4)
 
 
 def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1):
