@@ -1,4 +1,4 @@
-import ujson
+import ultrajson
 import sys
 
 if sys.version_info[0] < 3:
@@ -50,10 +50,10 @@ def _format_value(value):
 
 
 def _generate_pprint_json(value):
-    return ujson.dumps(value, indent=4)
+    return ultrajson.dumps(value, indent=4)
 
 
-def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1):
+def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1, float_int_same_type=False):
     # DAN - I had to flip flop this
     for key in expected:
         if key not in actual:
@@ -63,17 +63,17 @@ def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=1, less_t
         if key not in ignore_value_of_keys:
             # have to change order
             # are_same_flag, stack = _are_same(actual[key], expected[key], ignore_value_of_keys)
-            are_same_flag, stack = _are_same(expected[key], actual[key], ignore_value_of_keys,
-                                             times_higher=greater_than, times_lower=less_than)
+            are_same_flag, stack = _are_same(expected[key], actual[key], ignore_value_of_keys, False,
+                                             greater_than, less_than, float_int_same_type)
             if not are_same_flag:
                 return False, stack.append(StackItem('Different values', expected[key], actual[key]))
     return True, Stack()
 
 
-def _is_list_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1):
+def _is_list_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1, float_int_same_type=False):
     for i in range(len(expected)):
-        are_same_flag, stack = _are_same(expected[i], actual[i], ignore_value_of_keys, times_higher=greater_than,
-                                         times_lower=less_than)
+        are_same_flag, stack = _are_same(expected[i], actual[i], ignore_value_of_keys, False, greater_than, less_than,
+                                         float_int_same_type)
         if not are_same_flag:
             return False, stack.append(StackItem('Different values (Check order)', expected[i], actual[i]))
     return True, Stack()
@@ -85,7 +85,14 @@ def _bottom_up_sort(unsorted_json):
         for i in range(len(unsorted_json)):
             new_list.append(_bottom_up_sort(unsorted_json[i]))
         if new_list and isinstance(new_list[0], dict):
-            return sorted(new_list, key=lambda x: sorted(x.items(), key=lambda v: str(v[::-1])))
+            def key_function(d: dict):
+                return [k for k in d.keys()]
+
+            try:
+                return sorted(new_list, key=key_function)
+            except TypeError:
+                for i in new_list:
+                    print(i)
         return sorted(new_list)
 
     elif isinstance(unsorted_json, dict):
@@ -102,23 +109,27 @@ def key_sort():
     return
 
 
-def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False, times_higher=0, times_lower=0):
+def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False, times_higher=0, times_lower=0,
+              float_int_same_type=False):
     # Check for None
     if expected is None:
         return expected == actual, Stack()
 
     # Ensure they are of same type
     if type(expected) != type(actual):
-        return False, Stack().append(
-            StackItem('Type Mismatch: Expected Type: {0}, Actual Type: {1}'.format(type(expected), type(actual)),
-                      expected, actual))
+        if float_int_same_type and type(expected) in (int, float) and type(actual) in (int, float):
+            pass
+        else:
+            return False, Stack().append(
+                StackItem('Type Mismatch: Expected Type: {0}, Actual Type: {1}'.format(type(expected), type(actual)),
+                          expected, actual))
 
     # Compare primitive types immediately
-    if type(expected) in (str, bool, float):
+    if type(expected) in (str, bool):
         return expected == actual, Stack()
-    elif type(expected) == int:
-        if times_higher != 1 or times_lower != 1 :
-            return (expected * times_lower) <= actual <= (times_higher * expected)
+    elif type(expected) in (int, float):
+        if times_higher != 1 or times_lower != 1:
+            return (expected * times_lower) <= actual <= (times_higher * expected), Stack()
         else:
             return expected == actual, Stack()
 
@@ -139,35 +150,38 @@ def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False,
                 expected, actual))
 
     if isinstance(expected, dict):
-        return _is_dict_same(expected, actual, ignore_value_of_keys)
+        return _is_dict_same(expected, actual, ignore_value_of_keys, times_higher, times_lower)
 
     if isinstance(expected, list):
-        return _is_list_same(expected, actual, ignore_value_of_keys)
+        return _is_list_same(expected, actual, ignore_value_of_keys, times_higher, times_lower)
 
     return False, Stack().append(StackItem('Unhandled Type: {0}'.format(type(expected)), expected, actual))
 
 
 def are_same(original_a, original_b, ignore_list_order_recursively=False, ignore_value_of_keys=[], times_higher=1,
-             times_lower=1):
+             times_lower=1, float_int_same_type=False):
     if ignore_list_order_recursively:
         a = _bottom_up_sort(original_a)
         b = _bottom_up_sort(original_b)
     else:
         a = original_a
         b = original_b
-    return _are_same(a, b, ignore_value_of_keys, times_higher=times_higher, times_lower=times_lower)
+    return _are_same(a, b, ignore_value_of_keys, False, times_higher, times_lower, float_int_same_type)
 
 
-def contains(expected_original, actual_original, ignore_list_order_recursively=False, ignore_value_of_keys=[]):
+def contains(expected_original, actual_original, ignore_list_order_recursively=False, ignore_value_of_keys=[],
+             float_int_same_type=False):
     if ignore_list_order_recursively:
         actual = _bottom_up_sort(actual_original)
         expected = _bottom_up_sort(expected_original)
     else:
         actual = actual_original
         expected = expected_original
-    return _are_same(expected, actual, ignore_value_of_keys, True)
+    return _are_same(expected, actual, ignore_value_of_keys, True, float_int_same_type=float_int_same_type)
 
 
-def json_are_same(a, b, ignore_list_order_recursively=False, ignore_value_of_keys=[], times_higher=1, times_lower=1):
-    return are_same(ujson.loads(a), ujson.loads(b), ignore_list_order_recursively, ignore_value_of_keys, times_higher,
-                    times_lower)
+def json_are_same(a, b, ignore_list_order_recursively=False, ignore_value_of_keys=[], times_higher=1, times_lower=1,
+                  float_int_same_type=False):
+    return are_same(ultrajson.loads(a), ultrajson.loads(b), ignore_list_order_recursively, ignore_value_of_keys,
+                    times_higher,
+                    times_lower, float_int_same_type)
