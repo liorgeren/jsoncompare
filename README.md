@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/darthghandi/jsoncompare.svg?branch=master)](https://travis-ci.org/darthghandi/jsoncompare)
+
 ##Install
 ```bash
 pip install json_compare
