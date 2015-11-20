@@ -1,11 +1,17 @@
 language: python
 python:
-  - "3.3"
-  - "3.4"
-  - "3.5"
-# command to install dependencies
-install: "pip install -r requirements.txt"
-# command to run tests
+- '3.3'
+- '3.4'
+- '3.5'
+install: pip install -r requirements.txt
 script:
-  - cd json_compare/test
-  - py.test
+- cd json_compare/test
+- py.test
+deploy:
+  provider: pypi
+  user: darthghandi
+  password:
+    secure: bNPJcwpKjecz89zM7Tlni07ayHX2nfi03Ht8RSvfhA4lw3uJUepNbPLM0gRIb0gN81kn2cFwipWeNtc3GMODxXCWKTg9i+T/XqURYuClZ2iun1jvo4PU3frMsV1VkIBrtg1bHpO1O8cHlwVnKuEYNtpzzOkaPtrvi5iI0PAhiEOg20t7UqfHE4DNnbESI8+fOCAXNWVu/Q/DXsBEUS9IantqfGyfqPC8oGFuNxye1u9Wwn5Ep3Niw6hT/j8l874k50RehDw20dve7TkDKNdAbwFyx2xqWsdF17btg4B2Vs/fI3+x1KZtakhdNORQpwe6dKhL+cVpyyzPCXSnqgP+eXNwMyn2boBrGnph2j4ScgqQeUCWqh37Ot2jmc3JHTSZqSqvZXc8P5MhANKKofXBlIyENl1dEobxE0AVn0iW9TjPWm3ihoha2LDFbcqCH1gz8W1MLZ/IdUlaKT3QySIqDW/sZHe6NhSuEEzd+CCSe6r8CBGP0FGjdRC7k3NUtmsX7PGl2zMU28rBucmuaSuRzjEL+XJqRpkB6RmLWiCWh3ILBy2irNSsq3mlAv5S6lB+9QuyqDQIA0ggQNl7UTJ7AgS129Gx7QYEyKCOFLfMD39btYS/40yPbQn/XNi+kcRbxH0fcEEEWLVl+7wqRaoTCmgHE61VDH2j5T8LiY2Xb0A=
+  on:
+    branch: master
+  distributions: sdist bdist_wheel
