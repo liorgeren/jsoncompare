@@ -1,5 +1,6 @@
-import ultrajson
+import rapidjson
 import sys
+from collections import OrderedDict
 
 if sys.version_info[0] < 3:
     from future import range
@@ -50,10 +51,10 @@ def _format_value(value):
 
 
 def _generate_pprint_json(value):
-    return ultrajson.dumps(value, indent=4)
+    return rapidjson.dumps(value, indent=4)
 
 
-def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1, float_int_same_type=False):
+def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1, compare_ints_floats=False):
     # DAN - I had to flip flop this
     for key in expected:
         if key not in actual:
@@ -64,60 +65,58 @@ def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=1, less_t
             # have to change order
             # are_same_flag, stack = _are_same(actual[key], expected[key], ignore_value_of_keys)
             are_same_flag, stack = _are_same(expected[key], actual[key], ignore_value_of_keys, False,
-                                             greater_than, less_than, float_int_same_type)
+                                             greater_than, less_than, compare_ints_floats)
             if not are_same_flag:
                 return False, stack.append(StackItem('Different values', expected[key], actual[key]))
     return True, Stack()
 
 
-def _is_list_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1, float_int_same_type=False):
+def _is_list_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1, compare_ints_floats=False):
     for i in range(len(expected)):
         are_same_flag, stack = _are_same(expected[i], actual[i], ignore_value_of_keys, False, greater_than, less_than,
-                                         float_int_same_type)
+                                         compare_ints_floats)
         if not are_same_flag:
             return False, stack.append(StackItem('Different values (Check order)', expected[i], actual[i]))
     return True, Stack()
 
 
 def _bottom_up_sort(unsorted_json):
+    if isinstance(unsorted_json, dict):
+        return sorted((k, _bottom_up_sort(v)) for k, v in unsorted_json.items())
     if isinstance(unsorted_json, list):
-        new_list = []
-        for i in range(len(unsorted_json)):
-            new_list.append(_bottom_up_sort(unsorted_json[i]))
-        if new_list and isinstance(new_list[0], dict):
-            def key_function(d: dict):
-                return [k for k in d.keys()]
-
-            try:
-                return sorted(new_list, key=key_function)
-            except TypeError:
-                for i in new_list:
-                    print(i)
-        return sorted(new_list)
-
-    elif isinstance(unsorted_json, dict):
-        new_dict = {}
-        for key in sorted(unsorted_json):
-            new_dict[key] = _bottom_up_sort(unsorted_json[key])
-        return new_dict
-
+        return sorted(_bottom_up_sort(x) for x in unsorted_json)
     else:
         return unsorted_json
 
 
-def key_sort():
-    return
+def _to_ordered_dict(sorted_json):
+    if isinstance(sorted_json, list):
+        ordered = OrderedDict()
+        if sorted_json and isinstance(sorted_json[0], list):
+            ordered = []
+            for i in sorted_json:
+                ordered.append(_to_ordered_dict(i))
+            return ordered
+        else:
+            for i in sorted_json:
+                if isinstance(i, list):
+                    ordered.update(_to_ordered_dict(i))
+                elif isinstance(i, tuple):
+                    ordered[i[0]] = _to_ordered_dict(i[1])
+            return ordered
+    else:
+        return sorted_json
 
 
 def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False, times_higher=0, times_lower=0,
-              float_int_same_type=False):
+              compare_ints_floats=False):
     # Check for None
     if expected is None:
         return expected == actual, Stack()
 
     # Ensure they are of same type
     if type(expected) != type(actual):
-        if float_int_same_type and type(expected) in (int, float) and type(actual) in (int, float):
+        if compare_ints_floats and type(expected) in (int, float) and type(actual) in (int, float):
             pass
         else:
             return False, Stack().append(
@@ -149,7 +148,7 @@ def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False,
                 'Length Mismatch: Expected Length: {0}, Actual Length: {1}'.format(len(expected), len(actual)),
                 expected, actual))
 
-    if isinstance(expected, dict):
+    if isinstance(expected, dict) or isinstance(expected, OrderedDict):
         return _is_dict_same(expected, actual, ignore_value_of_keys, times_higher, times_lower)
 
     if isinstance(expected, list):
@@ -159,29 +158,29 @@ def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False,
 
 
 def are_same(original_a, original_b, ignore_list_order_recursively=False, ignore_value_of_keys=[], times_higher=1,
-             times_lower=1, float_int_same_type=False):
+             times_lower=1, compare_ints_floats=False):
     if ignore_list_order_recursively:
-        a = _bottom_up_sort(original_a)
-        b = _bottom_up_sort(original_b)
+        a = _to_ordered_dict(_bottom_up_sort(original_a))
+        b = _to_ordered_dict(_bottom_up_sort(original_b))
     else:
         a = original_a
         b = original_b
-    return _are_same(a, b, ignore_value_of_keys, False, times_higher, times_lower, float_int_same_type)
+    return _are_same(a, b, ignore_value_of_keys, False, times_higher, times_lower, compare_ints_floats)
 
 
 def contains(expected_original, actual_original, ignore_list_order_recursively=False, ignore_value_of_keys=[],
-             float_int_same_type=False):
+             compare_ints_floats=False):
     if ignore_list_order_recursively:
-        actual = _bottom_up_sort(actual_original)
-        expected = _bottom_up_sort(expected_original)
+        actual = _to_ordered_dict(_bottom_up_sort(actual_original))
+        expected = _to_ordered_dict(_bottom_up_sort(expected_original))
     else:
         actual = actual_original
         expected = expected_original
-    return _are_same(expected, actual, ignore_value_of_keys, True, float_int_same_type=float_int_same_type)
+    return _are_same(expected, actual, ignore_value_of_keys, True, compare_ints_floats=compare_ints_floats)
 
 
 def json_are_same(a, b, ignore_list_order_recursively=False, ignore_value_of_keys=[], times_higher=1, times_lower=1,
-                  float_int_same_type=False):
-    return are_same(ultrajson.loads(a), ultrajson.loads(b), ignore_list_order_recursively, ignore_value_of_keys,
+                  compare_ints_floats=False):
+    return are_same(rapidjson.loads(a), rapidjson.loads(b), ignore_list_order_recursively, ignore_value_of_keys,
                     times_higher,
-                    times_lower, float_int_same_type)
+                    times_lower, compare_ints_floats)
