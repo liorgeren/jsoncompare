@@ -17,6 +17,7 @@ If an integer is say 10 off, then it's still close enough for me. I also used ra
     0.1.1      Orginal Version
     0.1.2      Adds support for "contains"
     0.1.3      Adds support for Python 3, range for int values, ujson instead of builtin json(for speed)
+    0.2.0      Adds rapidjson instead of ujson, fixes a comparison issue, all unit tests pass
 
 ##Examples
 ```python
