@@ -332,3 +332,63 @@ def test_contains_actual_smaller():
         {"wtf2": "omg2"}
     ]
     assert not json_compare.contains(expected, actual)[0]
+
+
+def test_int_within_range():
+    actual = [
+        {"wtf": 5},
+        {"wtf1": 6}
+    ]
+    expected = [
+        {"wtf": 9},
+        {"wtf1": 4}
+    ]
+    assert json_compare.are_same(expected, actual, times_higher=2, times_lower=.5)[0]
+
+
+def test_int_outside_range():
+    actual = [
+        {"wtf": 11},
+        {"wtf1": 2}
+    ]
+    expected = [
+        {"wtf": 5},
+        {"wtf1": 6}
+    ]
+    assert not json_compare.are_same(expected, actual, times_higher=2, times_lower=.5)[0]
+
+
+def test_float_within_range():
+    actual = [
+        {"wtf": 15.3},
+        {"wtf1": 5.5}
+    ]
+    expected = [
+        {"wtf": 5.5},
+        {"wtf1": 6.6}
+    ]
+    assert json_compare.are_same(expected, actual, times_higher=3, times_lower=.6)[0]
+
+
+def test_float_outside_range():
+    actual = [
+        {"wtf": 18.3},
+        {"wtf1": 2.5}
+    ]
+    expected = [
+        {"wtf": 5.5},
+        {"wtf1": 6.6}
+    ]
+    assert not json_compare.are_same(expected, actual, times_higher=3, times_lower=.6)[0]
+
+
+def test_float_int_compare():
+    actual = [
+        {"wtf": 12.3},
+        {"wtf1": 5}
+    ]
+    expected = [
+        {"wtf": 5},
+        {"wtf1": 6.6}
+    ]
+    assert json_compare.are_same(expected, actual, times_higher=3, times_lower=.6, compare_ints_floats=True)[0]

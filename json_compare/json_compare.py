@@ -149,10 +149,10 @@ def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False,
                 expected, actual))
 
     if isinstance(expected, dict) or isinstance(expected, OrderedDict):
-        return _is_dict_same(expected, actual, ignore_value_of_keys, times_higher, times_lower)
+        return _is_dict_same(expected, actual, ignore_value_of_keys, times_higher, times_lower, compare_ints_floats)
 
     if isinstance(expected, list):
-        return _is_list_same(expected, actual, ignore_value_of_keys, times_higher, times_lower)
+        return _is_list_same(expected, actual, ignore_value_of_keys, times_higher, times_lower, compare_ints_floats)
 
     return False, Stack().append(StackItem('Unhandled Type: {0}'.format(type(expected)), expected, actual))
 
