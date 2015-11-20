@@ -1,6 +1,6 @@
 ##Install
 ```bash
-pip install ujsoncompare
+pip install json_compare
 ```
 
 ##Explanation
@@ -10,7 +10,7 @@ pip install ujsoncompare
 
 ##Disclaimer
 This project takes the original jsoncompare and adds a few things. First, I wanted to use this with python 3. I also needed flexibility with integers.
-If an integer is say 10 off, then it's still close enough for me. I also used ujson instead of the builtin json module since it can offer a lot of speed.
+If an integer is say 10 off, then it's still close enough for me. I also used rapidjson instead of the builtin json module since it can offer a lot of speed.
 
 ## Recent Changes
     Version    Comments
@@ -20,28 +20,28 @@ If an integer is say 10 off, then it's still close enough for me. I also used uj
 
 ##Examples
 ```python
-from ujsoncompare import ujsoncompare
+from json_compare import json_compare
 
 # Compare respecting each array's order
-ujsoncompare.are_same(a, b)
+json_compare.are_same(a, b)
 
 # Compare ignoring each array's order
-ujsoncompare.are_same(a, b, True)
+json_compare.are_same(a, b, True)
 
 # Compare ignoring the value of certain keys
-ujsoncompare.are_same(a, b, False, ["datetime", "snacktime"])
+json_compare.are_same(a, b, False, ["datetime", "snacktime"])
 
 # Compare ignoring each array's order and giving int values a 30% leeway
-ujsoncompare.are_same(a, b, True, times_higher=1.3, times_lower=.7)
+json_compare.are_same(a, b, True, times_higher=1.3, times_lower=.7)
 
 # Contains at least
-ujsoncompare.contains(a, b)
+json_compare.contains(a, b)
 
 ```
 
 ```python
 # Getting difference traces
-from ujsoncompare import ujsoncompare
+from json_compare import json_compare
 
 a = {
     "failureReason" : "Invalid request entity",
@@ -69,7 +69,7 @@ b = {
         }
     ]
 }
-print ujsoncompare.are_same(a, b)[1]
+print json_compare.are_same(a, b)[1]
 ```
 results in:
 
