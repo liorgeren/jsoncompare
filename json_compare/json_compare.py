@@ -128,6 +128,8 @@ def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False,
         return expected == actual, Stack()
     elif type(expected) in (int, float):
         if times_higher != 1 or times_lower != 1:
+            if expected == 0:
+                expected = 1
             return (expected * times_lower) <= actual <= (times_higher * expected), Stack()
         else:
             return expected == actual, Stack()

@@ -392,3 +392,15 @@ def test_float_int_compare():
         {"wtf1": 6.6}
     ]
     assert json_compare.are_same(expected, actual, times_higher=3, times_lower=.6, compare_ints_floats=True)[0]
+
+
+def test_expected_zero_has_range():
+    actual = [
+        {"wtf": 1},
+        {"wtf1": 7}
+    ]
+    expected = [
+        {"wtf": 0},
+        {"wtf1": 6}
+    ]
+    assert json_compare.are_same(expected, actual, times_higher=3, times_lower=.6, compare_ints_floats=True)[0]
