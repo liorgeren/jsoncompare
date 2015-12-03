@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from setuptools import setup
+from json_compare import __version__
 
 
 def read_readme(filename):
@@ -12,7 +13,7 @@ def read_readme(filename):
 
 setup(
     name='json_compare',
-    version='0.2.6',
+    version=__version__,
     description='Json comparison tool',
     author='Chris Saxey',
     author_email='chrissaxey@gmail.com',
