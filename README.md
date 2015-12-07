@@ -9,10 +9,11 @@ pip install json_compare
 *  Being able to tell whether or not an arbitrarily nested json blob is the same as another blob can hurt your eyes.
 *  Additional complexity comes in when your json array's order doesn't matter.
 *  For example, you might have a set in Java that you are going to send over the wire as json. It may be represented as a json array but in actuality, you don't care about the order.
+*  When two values are close, use rel_tolerance and abs_tolerance to specify the amount of leeway to provide. [Math.isclose](https://docs.python.org/3/library/math.html#math.isclose) documents the specifics. 
 
 ##Disclaimer
-This project takes the original jsoncompare and adds a few things. First, I wanted to use this with python 3. I also needed flexibility with integers.
-If an integer is say 10 off, then it's still close enough for me. I also used rapidjson instead of the builtin json module since it can offer a lot of speed.
+This project takes the original jsoncompare and adds a few things. First, I wanted to use this with python 3. I also needed flexibility with numbers.
+If an number is say 10 off, then it's still close enough for me. I also used rapidjson instead of the builtin json module since it can offer a lot of speed.
 
 ## Recent Changes
     Version    Comments
@@ -20,6 +21,7 @@ If an integer is say 10 off, then it's still close enough for me. I also used ra
     0.1.2      Adds support for "contains"
     0.1.3      Adds support for Python 3, range for int values, ujson instead of builtin json(for speed)
     0.2.0      Adds rapidjson instead of ujson, fixes a comparison issue, all unit tests pass
+    0.2.8      Using math.isclose
 
 ##Examples
 ```python
@@ -34,8 +36,8 @@ json_compare.are_same(a, b, True)
 # Compare ignoring the value of certain keys
 json_compare.are_same(a, b, False, ["datetime", "snacktime"])
 
-# Compare ignoring each array's order and giving int values a 30% leeway
-json_compare.are_same(a, b, True, times_higher=1.3, times_lower=.7)
+# Compare ignoring each array's order and giving number values a 30% leeway
+json_compare.are_same(a, b, True, rel_tolerance=.3)
 
 # Contains at least
 json_compare.contains(a, b)

@@ -1,9 +1,13 @@
 import rapidjson
 import sys
+from math import isclose
 from collections import OrderedDict
+
 
 if sys.version_info[0] < 3:
     from future import range
+if sys.version_info[0] == 3 and sys.version_info[1] > 5:
+    from is_close import isclose
 
 
 class Stack:
@@ -108,7 +112,7 @@ def _to_ordered_dict(sorted_json):
         return sorted_json
 
 
-def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False, times_higher=0, times_lower=0,
+def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False, rel_tolerance=0, abs_tolerance=0,
               compare_ints_floats=False):
     # Check for None
     if expected is None:
@@ -127,10 +131,8 @@ def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False,
     if type(expected) in (str, bool):
         return expected == actual, Stack()
     elif type(expected) in (int, float):
-        if times_higher != 1 or times_lower != 1:
-            if expected == 0:
-                expected = 1
-            return (expected * times_lower) <= actual <= (times_higher * expected), Stack()
+        if rel_tolerance != 1 or abs_tolerance != 1:
+            return isclose(expected, actual, rel_tol=rel_tolerance, abs_tol=abs_tolerance), Stack()
         else:
             return expected == actual, Stack()
 
@@ -151,23 +153,23 @@ def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False,
                 expected, actual))
 
     if isinstance(expected, dict) or isinstance(expected, OrderedDict):
-        return _is_dict_same(expected, actual, ignore_value_of_keys, times_higher, times_lower, compare_ints_floats)
+        return _is_dict_same(expected, actual, ignore_value_of_keys, rel_tolerance, abs_tolerance, compare_ints_floats)
 
     if isinstance(expected, list):
-        return _is_list_same(expected, actual, ignore_value_of_keys, times_higher, times_lower, compare_ints_floats)
+        return _is_list_same(expected, actual, ignore_value_of_keys, rel_tolerance, abs_tolerance, compare_ints_floats)
 
     return False, Stack().append(StackItem('Unhandled Type: {0}'.format(type(expected)), expected, actual))
 
 
-def are_same(original_a, original_b, ignore_list_order_recursively=False, ignore_value_of_keys=[], times_higher=1,
-             times_lower=1, compare_ints_floats=False):
+def are_same(original_a, original_b, ignore_list_order_recursively=False, ignore_value_of_keys=[], rel_tolerance=1,
+             abs_tolerance=1, compare_ints_floats=False):
     if ignore_list_order_recursively:
         a = _to_ordered_dict(_bottom_up_sort(original_a))
         b = _to_ordered_dict(_bottom_up_sort(original_b))
     else:
         a = original_a
         b = original_b
-    return _are_same(a, b, ignore_value_of_keys, False, times_higher, times_lower, compare_ints_floats)
+    return _are_same(a, b, ignore_value_of_keys, False, rel_tolerance, abs_tolerance, compare_ints_floats)
 
 
 def contains(expected_original, actual_original, ignore_list_order_recursively=False, ignore_value_of_keys=[],
@@ -181,8 +183,8 @@ def contains(expected_original, actual_original, ignore_list_order_recursively=F
     return _are_same(expected, actual, ignore_value_of_keys, True, compare_ints_floats=compare_ints_floats)
 
 
-def json_are_same(a, b, ignore_list_order_recursively=False, ignore_value_of_keys=[], times_higher=1, times_lower=1,
+def json_are_same(a, b, ignore_list_order_recursively=False, ignore_value_of_keys=[], rel_tolerance=1, abs_tolerance=1,
                   compare_ints_floats=False):
     return are_same(rapidjson.loads(a), rapidjson.loads(b), ignore_list_order_recursively, ignore_value_of_keys,
-                    times_higher,
-                    times_lower, compare_ints_floats)
+                    rel_tolerance,
+                    abs_tolerance, compare_ints_floats)

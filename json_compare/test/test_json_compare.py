@@ -343,19 +343,19 @@ def test_int_within_range():
         {"wtf": 9},
         {"wtf1": 4}
     ]
-    assert json_compare.are_same(expected, actual, times_higher=2, times_lower=.5)[0]
+    assert json_compare.are_same(expected, actual, rel_tolerance=2, abs_tolerance=5)[0]
 
 
 def test_int_outside_range():
     actual = [
         {"wtf": 11},
-        {"wtf1": 2}
+        {"wtf1": 4}
     ]
     expected = [
         {"wtf": 5},
-        {"wtf1": 6}
+        {"wtf1": 1}
     ]
-    assert not json_compare.are_same(expected, actual, times_higher=2, times_lower=.5)[0]
+    assert not json_compare.are_same(expected, actual, rel_tolerance=.5, abs_tolerance=2)[0]
 
 
 def test_float_within_range():
@@ -367,19 +367,19 @@ def test_float_within_range():
         {"wtf": 5.5},
         {"wtf1": 6.6}
     ]
-    assert json_compare.are_same(expected, actual, times_higher=3, times_lower=.6)[0]
+    assert json_compare.are_same(expected, actual, rel_tolerance=3, abs_tolerance=5)[0]
 
 
 def test_float_outside_range():
     actual = [
         {"wtf": 18.3},
-        {"wtf1": 2.5}
+        {"wtf1": 0.5}
     ]
     expected = [
         {"wtf": 5.5},
         {"wtf1": 6.6}
     ]
-    assert not json_compare.are_same(expected, actual, times_higher=3, times_lower=.6)[0]
+    assert not json_compare.are_same(expected, actual, rel_tolerance=.5, abs_tolerance=5)[0]
 
 
 def test_float_int_compare():
@@ -391,7 +391,7 @@ def test_float_int_compare():
         {"wtf": 5},
         {"wtf1": 6.6}
     ]
-    assert json_compare.are_same(expected, actual, times_higher=3, times_lower=.6, compare_ints_floats=True)[0]
+    assert json_compare.are_same(expected, actual, rel_tolerance=3, abs_tolerance=.6, compare_ints_floats=True)[0]
 
 
 def test_expected_zero_has_range():
@@ -403,4 +403,10 @@ def test_expected_zero_has_range():
         {"wtf": 0},
         {"wtf1": 6}
     ]
-    assert json_compare.are_same(expected, actual, times_higher=3, times_lower=.6, compare_ints_floats=True)[0]
+    assert json_compare.are_same(expected, actual, rel_tolerance=3, abs_tolerance=.6, compare_ints_floats=True)[0]
+
+
+def test_infinity_is_same():
+    actual = {"counts": [float("inf"), 1, 112, 57], "name": "Political Animals", "url": ""}
+    expected = {"counts": [float("inf"), 0, 118, 53], "name": "Political Animals", "url": ""}
+    assert json_compare.are_same(expected, actual, rel_tolerance=2, abs_tolerance=2)
