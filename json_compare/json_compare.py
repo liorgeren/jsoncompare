@@ -6,7 +6,7 @@ from collections import OrderedDict
 if sys.version_info[0] < 3:
     from future import range
 if sys.version_info[0] == 3 and sys.version_info[1] > 5:
-    from is_close import isclose
+    from .is_close import isclose
 else:
     from math import isclose
 
