@@ -59,7 +59,7 @@ def _generate_pprint_json(value):
     return rapidjson.dumps(value, indent=4)
 
 
-def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1, compare_ints_floats=False):
+def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1, compare_ints_floats=False, ignore_missing_keys=False):
     # DAN - I had to flip flop this
     for key in expected:
         if key not in actual:
@@ -69,16 +69,16 @@ def _is_dict_same(expected, actual, ignore_value_of_keys, greater_than=1, less_t
         if key not in ignore_value_of_keys:
             # have to change order
             # are_same_flag, stack = _are_same(actual[key], expected[key], ignore_value_of_keys)
-            are_same_flag, stack = _are_same(expected[key], actual[key], ignore_value_of_keys, False,
+            are_same_flag, stack = _are_same(expected[key], actual[key], ignore_value_of_keys, ignore_missing_keys,
                                              greater_than, less_than, compare_ints_floats)
             if not are_same_flag:
                 return False, stack.append(StackItem('Different values', expected[key], actual[key]))
     return True, Stack()
 
 
-def _is_list_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1, compare_ints_floats=False):
+def _is_list_same(expected, actual, ignore_value_of_keys, greater_than=1, less_than=1, compare_ints_floats=False, ignore_missing_keys=False):
     for i in range(len(expected)):
-        are_same_flag, stack = _are_same(expected[i], actual[i], ignore_value_of_keys, False, greater_than, less_than,
+        are_same_flag, stack = _are_same(expected[i], actual[i], ignore_value_of_keys, ignore_missing_keys, greater_than, less_than,
                                          compare_ints_floats)
         if not are_same_flag:
             return False, stack.append(StackItem('Different values (Check order)', expected[i], actual[i]))
@@ -139,7 +139,7 @@ def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False,
 
     # Ensure collections have the same length (if applicable)
     if ignore_missing_keys:
-        # Ensure collections has minimum length (if applicable) 
+        # Ensure collections has minimum length (if applicable)
         # This is a short-circuit condition because (b contains a)
         if len(expected) > len(actual):
             return False, Stack().append(StackItem(
@@ -154,10 +154,10 @@ def _are_same(expected, actual, ignore_value_of_keys, ignore_missing_keys=False,
                 expected, actual))
 
     if isinstance(expected, dict) or isinstance(expected, OrderedDict):
-        return _is_dict_same(expected, actual, ignore_value_of_keys, rel_tolerance, abs_tolerance, compare_ints_floats)
+        return _is_dict_same(expected, actual, ignore_value_of_keys, rel_tolerance, abs_tolerance, compare_ints_floats, ignore_missing_keys)
 
     if isinstance(expected, list):
-        return _is_list_same(expected, actual, ignore_value_of_keys, rel_tolerance, abs_tolerance, compare_ints_floats)
+        return _is_list_same(expected, actual, ignore_value_of_keys, rel_tolerance, abs_tolerance, compare_ints_floats, ignore_missing_keys)
 
     return False, Stack().append(StackItem('Unhandled Type: {0}'.format(type(expected)), expected, actual))
 
