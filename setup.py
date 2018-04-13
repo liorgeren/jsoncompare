@@ -13,7 +13,7 @@ def read_readme(filename):
 
 setup(
     name='json_compare',
-    version=__version__,
+    version='0.2.12',
     description='Json comparison tool',
     author='Chris Saxey',
     author_email='chrissaxey@gmail.com',
